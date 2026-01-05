@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import asyncio
+import psutil
 
 app = FastAPI()
 
@@ -23,18 +24,8 @@ def root():
         return FileResponse(index_file)
     return {"message": "Index file not found"}
 
-counter = 0
-
 @app.get("/data")
 def get_data():
-    return {"message": f"Hello World {counter}"}
-
-async def counter_task():
-    global counter
-    while True:
-        counter += 1
-        await asyncio.sleep(1)
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(counter_task())
+    return {"cpu": psutil.cpu_percent(),
+            "ram": psutil.virtual_memory().percent,
+        }
