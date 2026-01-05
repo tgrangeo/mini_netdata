@@ -3,40 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <title>mini_netdata</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
         font-family: sans-serif;
         text-align: center;
-        margin-top: 50px;
+        margin-top: 20px;
+        background-color: rgb(6, 4, 4);
+        color: white;
       }
-      .data {
-        font-size: 2em;
-        color: #4caf50;
+      .chart-container {
+        width: 80%;
+        margin: 20px auto;
       }
     </style>
   </head>
   <body>
     <h2>CPU Usage</h2>
-    <div class="data" id="cpu">0</div>
-    <h2>Ram Usage</h2>
-    <div class="data" id="ram">0</div>
+    <div class="chart-container">
+      <canvas id="cpuChart"></canvas>
+    </div>
+    <h2>RAM Usage</h2>
+    <div class="chart-container">
+      <canvas id="ramChart"></canvas>
+    </div>
 
     <script>
-      const cpuDiv = document.getElementById("cpu");
-      const ramDiv = document.getElementById("ram");
-      async function updateCounter() {
+      const cpuCtx = document.getElementById("cpuChart").getContext("2d");
+      const ramCtx = document.getElementById("ramChart").getContext("2d");
+
+      const cpuChart = new Chart(cpuCtx, {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "CPU Usage (%)", data: [], borderColor: "rgba(75, 192, 192, 1)" }] },
+      });
+
+      const ramChart = new Chart(ramCtx, {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "RAM Usage (%)", data: [], borderColor: "rgba(153, 102, 255, 1)" }] },
+      });
+
+      async function updateCharts() {
         try {
           const response = await fetch("/data");
           const data = await response.json();
-          cpuDiv.textContent = data.cpu + "%";
-          ramDiv.textContent = data.ram + "%";
+          const now = new Date().toLocaleTimeString();
+
+          cpuChart.data.labels.push(now);
+          cpuChart.data.datasets[0].data.push(data.cpu);
+          cpuChart.update();
+
+          ramChart.data.labels.push(now);
+          ramChart.data.datasets[0].data.push(data.ram);
+          ramChart.update();
         } catch (err) {
           console.error("Failed to fetch data:", err);
         }
       }
-
-      setInterval(updateCounter, 1000);
-      updateCounter();
+      setInterval(updateCharts, 1000);
+      updateCharts();
     </script>
   </body>
 </html>
