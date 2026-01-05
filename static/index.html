@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>mini_netdata</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        #counter { font-size: 3em; color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>Server Counter</h1>
+    <div id="counter">0</div>
+
+    <script>
+        const counterDiv = document.getElementById("counter");
+
+        async function updateCounter() {
+            try {
+                const response = await fetch("/data");
+                const data = await response.json();
+                counterDiv.textContent = data.message.split(" ").pop();
+            } catch (err) {
+                console.error("Failed to fetch counter:", err);
+            }
+        }
+
+        setInterval(updateCounter, 1000);
+        updateCounter();
+    </script>
+</body>
+</html>
